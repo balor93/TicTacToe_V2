@@ -74,9 +74,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Button button = (Button) v;
-                button.setText(currentPlayer.symbol);
-                changePlayer();
-                displayTurn();
+
+                if(button.getText().equals("")) {
+                    button.setText(currentPlayer.symbol);
+                    changePlayer();
+                    displayTurn();
+                }
+
             }
         });
     }
