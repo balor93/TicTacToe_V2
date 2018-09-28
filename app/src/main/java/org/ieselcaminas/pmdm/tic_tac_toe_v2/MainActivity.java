@@ -13,21 +13,24 @@ public class MainActivity extends AppCompatActivity {
         public String name;
         public String symbol;
 
-        public Player(String name, String symbol){
-            this.name=name;
-            this.symbol=symbol;
+        public Player(String name, String symbol) {
+            this.name = name;
+            this.symbol = symbol;
         }
     }
 
+    enum StateOfGame {
+        Playing, Draw, Winner
+    }
 
 
     private Player player1;
     private Player player2;
     private Player currentPlayer;
-    public static final int NUM_ROWS=3;
-    private Button [][] buttons;
-
-
+    public static final int NUM_ROWS = 3;
+    private Button[][] buttons;
+    private StateOfGame state;
+    private int numberOfMoves;
 
 
     @Override
@@ -36,9 +39,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-        player1= new Player("1","X");
-        player2= new Player("2", "O");
-        currentPlayer=player1;
+        player1 = new Player("1", "X");
+        player2 = new Player("2", "O");
+        currentPlayer = player1;
+        state = StateOfGame.Playing;
+        numberOfMoves = 0;
 
         GridLayout gridLayout = findViewById(R.id.gridLayout);
         gridLayout.setRowCount(NUM_ROWS);
@@ -48,23 +53,19 @@ public class MainActivity extends AppCompatActivity {
         displayTurn();
 
 
-
-
-
     }
 
     private void addButtons(GridLayout gridLayout) {
 
-        buttons= new Button[NUM_ROWS][NUM_ROWS];
+        buttons = new Button[NUM_ROWS][NUM_ROWS];
 
-        for(int row=0;row<buttons.length;row++){
-            for(int col=0;col<buttons.length;col++){
-                buttons[row][col]= new Button(this,null,android.R.attr.buttonStyleSmall);
+        for (int row = 0; row < buttons.length; row++) {
+            for (int col = 0; col < buttons.length; col++) {
+                buttons[row][col] = new Button(this, null, android.R.attr.buttonStyleSmall);
                 gridLayout.addView(buttons[row][col]);
                 addListenerToButton(buttons[row][col]);
             }
         }
-
 
 
     }
@@ -73,27 +74,137 @@ public class MainActivity extends AppCompatActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (!(state == StateOfGame.Playing)) {
+                    return;
+                }
                 Button button = (Button) v;
 
-                if(button.getText().equals("")) {
+                if (button.getText().equals("")) {
                     button.setText(currentPlayer.symbol);
-                    changePlayer();
-                    displayTurn();
+                    numberOfMoves++;
+                    state = checkWinner();
+                    if(!(state ==StateOfGame.Playing)){
+                        displayEndOfGame();
+                    }else {
+                        changePlayer();
+                        displayTurn();
+                    }
+
                 }
 
             }
         });
     }
 
+    private void displayEndOfGame() {
+        TextView textView = findViewById(R.id.texTurn);
+
+        if(state==StateOfGame.Draw){
+            textView.setText("Draw");
+        }else{
+            if(state==StateOfGame.Winner) {
+                ;
+                textView.setText("Winner: " + currentPlayer.name + " Symbol: " + currentPlayer.symbol);
+            }
+            }
+
+
+    }
+
+    private StateOfGame checkWinner() {
+        boolean winner = checkRowsWinner();
+        if (!winner) {
+            winner = checkColsWinner();
+        }
+        if (!winner) {
+            winner = checkDiagonalLeftToRight();
+        }
+        if (!winner) {
+            winner = checkDiagonalRightToLeft();
+        }
+        if (!winner) {
+            if (numberOfMoves == 9) {
+                return StateOfGame.Draw;
+            }
+        }
+        if (winner) {
+            return StateOfGame.Winner;
+        } else {
+            return StateOfGame.Playing;
+        }
+
+    }
+
+    private boolean checkDiagonalRightToLeft() {
+        int countSymbols = 0;
+        for (int i = 0; i < NUM_ROWS; i++) {
+            if (buttons[i][NUM_ROWS - i - 1].getText().equals(currentPlayer.symbol)) {
+                countSymbols++;
+            }
+        }
+        if (countSymbols == NUM_ROWS) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean checkDiagonalLeftToRight() {
+        int countSymbols = 0;
+        for (int i = 0; i < NUM_ROWS; i++) {
+            if (buttons[i][i].getText().equals(currentPlayer.symbol)) {
+                countSymbols++;
+            }
+        }
+        if (countSymbols == NUM_ROWS) {
+            return true;
+        }
+
+        return false;
+
+    }
+
+    private boolean checkColsWinner() {
+        int countSymbols;
+        for (int col = 0; col < NUM_ROWS; col++) {
+            countSymbols = 0;
+            for (int row = 0; row < NUM_ROWS; row++) {
+                if (buttons[row][col].getText().equals(currentPlayer.symbol)) {
+                    countSymbols++;
+                }
+            }
+            if (countSymbols == NUM_ROWS) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean checkRowsWinner() {
+        int countSymbols;
+        for (int row = 0; row < NUM_ROWS; row++) {
+            countSymbols = 0;
+            for (int col = 0; col < NUM_ROWS; col++) {
+                if (buttons[row][col].getText().equals(currentPlayer.symbol)) {
+                    countSymbols++;
+                }
+            }
+            if (countSymbols == NUM_ROWS) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void displayTurn() {
-        TextView textView= findViewById(R.id.texTurn);
-        textView.setText("Turn player "+ currentPlayer.name+" Symbol: "+currentPlayer.symbol);
+        TextView textView = findViewById(R.id.texTurn);
+        textView.setText("Turn player " + currentPlayer.name + " Symbol: " + currentPlayer.symbol);
     }
 
     private void changePlayer() {
-        if(currentPlayer==player1) {
+        if (currentPlayer == player1) {
             currentPlayer = player2;
-        }else {
+        } else {
             currentPlayer = player1;
         }
     }
