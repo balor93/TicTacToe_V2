@@ -41,18 +41,39 @@ public class MainActivity extends AppCompatActivity {
 
         player1 = new Player("1", "X");
         player2 = new Player("2", "O");
-        currentPlayer = player1;
-        state = StateOfGame.Playing;
-        numberOfMoves = 0;
 
+
+
+        setActionToResetButton();
+        initGame();
+
+
+
+
+
+    }
+
+    private void setActionToResetButton() {
+        Button buttonReset = findViewById(R.id.buttonReset);
+        buttonReset.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                GridLayout gridLayout = findViewById(R.id.gridLayout);
+                gridLayout.removeAllViews();
+                initGame();
+            }
+        });
+    }
+
+    private void initGame() {
         GridLayout gridLayout = findViewById(R.id.gridLayout);
         gridLayout.setRowCount(NUM_ROWS);
         gridLayout.setColumnCount(NUM_ROWS);
-
         addButtons(gridLayout);
+        numberOfMoves=0;
+        state = StateOfGame.Playing;
+        currentPlayer = player1;
         displayTurn();
-
-
     }
 
     private void addButtons(GridLayout gridLayout) {
@@ -83,9 +104,9 @@ public class MainActivity extends AppCompatActivity {
                     button.setText(currentPlayer.symbol);
                     numberOfMoves++;
                     state = checkWinner();
-                    if(!(state ==StateOfGame.Playing)){
+                    if (!(state == StateOfGame.Playing)) {
                         displayEndOfGame();
-                    }else {
+                    } else {
                         changePlayer();
                         displayTurn();
                     }
@@ -99,14 +120,14 @@ public class MainActivity extends AppCompatActivity {
     private void displayEndOfGame() {
         TextView textView = findViewById(R.id.texTurn);
 
-        if(state==StateOfGame.Draw){
+        if (state == StateOfGame.Draw) {
             textView.setText("Draw");
-        }else{
-            if(state==StateOfGame.Winner) {
+        } else {
+            if (state == StateOfGame.Winner) {
                 ;
                 textView.setText("Winner: " + currentPlayer.name + " Symbol: " + currentPlayer.symbol);
             }
-            }
+        }
 
 
     }
